@@ -1,7 +1,7 @@
 subprojects {
     apply plugin: 'java'
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
     java.withSourcesJar()
     java.withJavadocJar()
 
@@ -30,7 +30,6 @@ subprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-
         maven {
             name = 'Sponge / Mixin'
             url = 'https://repo.spongepowered.org/repository/maven-public/'
@@ -48,6 +47,6 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = 'UTF-8'
-        it.options.release = 17
+        it.options.release = 21
     }
 }
