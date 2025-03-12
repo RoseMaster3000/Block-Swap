@@ -3,6 +3,7 @@ package corgitaco.blockswap.swapper;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.MapCodec;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.mixin.access.StateHolderAccess;
 import corgitaco.blockswap.util.TickHelper;
@@ -31,10 +32,15 @@ public class Swapper {
     public static final Codec<BlockState> COMMENTED_STATE_CODEC = codec(CodecUtil.BLOCK_CODEC, Block::defaultBlockState);
 
     protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> object, Function<O, S> defaultVal) {
-        return object.dispatch("Name", (stateHolder) -> ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner(), (o) -> {
-            S stateProperty = defaultVal.apply(o);
-            return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
-        });
+        return object.dispatch("Name", 
+            (stateHolder) -> ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner(),
+            (o) -> {
+                S stateProperty = defaultVal.apply(o);
+                return (stateProperty.getValues().isEmpty() 
+                    ? MapCodec.unit(stateProperty)
+                    : ((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec());
+            }
+        );
     }
 
     public static Codec<Pair<BlockState, BlockState>> PAIR_STATE_CODEC = RecordCodecBuilder.create(builder -> builder.group(
